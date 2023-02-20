@@ -1,47 +1,49 @@
+from fastapi import Body, status, Depends
+
+
+
 from .config import *
 from .models import *
 from .schemas import *
-from fastapi import status
+
+from .auth_handler import signJWT
+from .auth_bearer import JWTBearer
+
 from sqlalchemy.orm import Session
 
-@app.get("/")
-def root():
-    return "todooo"
 
-@app.post("/todo", status_code=status.HTTP_201_CREATED)
-def create_todo(todo: UserRequest):
-    # create a new database session
-    session = Session(bind=engine, expire_on_commit=False)
+users = []
+posts = []
 
-    # create an instance of the ToDo database model
-    tododb = User(task = todo.task)
-
-    # add it to the session and commit it
-    session.add(tododb)
-    session.commit()
-
-    # grab the id given to the object from the database
-    id = tododb.id
-
-    # close the session
-    session.close()
-
-    # return the id
-    return f"created todo item with id {id}"
+#Helper function to log user in!
+def check_user(data: UserLoginSchema):
+    for user in users:
+        if user.username == data.username and user.password == data.password:
+            return True
+    return False
 
 
-@app.get("/todo/{id}")
-def read_todo(id: int):
-    return "read todo item with id {id}"
+@app.post("/posts", dependencies=[Depends(JWTBearer())], tags=["posts"])
+async def add_post(post: PostSchema) -> dict:
+    print("blabla")
+    return {
+        "data": "post added."
+    }
 
-@app.put("/todo/{id}")
-def update_todo(id: int):
-    return "update todo item with id {id}"
+@app.post("/")
+async def root():
+    return "haha"
 
-@app.delete("/todo/{id}")
-def delete_todo(id: int):
-    return "delete todo item with id {id}"
+@app.post("/user/signup", tags=["user"])
+async def create_user(user: UserSchema = Body(...)):
+    users.append(user) # replace with db call, making sure to hash the password first
+    print(users)
+    return signJWT(user.username)
 
-@app.get("/todo")
-def read_todo_list():
-    return "read todo list"
+@app.post("/user/login", tags=["user"])
+async def user_login(user: UserLoginSchema = Body(...)):
+    if check_user(user):
+        return signJWT(user.username)
+    return {
+        "error": "Wrong login details!"
+    }

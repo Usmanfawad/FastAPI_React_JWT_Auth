@@ -2,32 +2,23 @@ from flask import render_template, url_for, flash, redirect, jsonify
 from flaskApp import app
 # from flaskApp.models import User, Post
 
+import requests
+
+DUMMY_USERNAME = "Usmanflask1234"
+DUMMY_PASSWORD = "Fawad123"
 
 
-@app.route("/")
-def home():
-    return jsonify(
-        data = "success"
+@app.route("/signup")
+def signup():
+    URL = "http://127.0.0.1:8000/user/signup"
+    PARAMS = {
+        "username":DUMMY_USERNAME,
+        "password":DUMMY_PASSWORD
+        }
+
+    x = requests.post(URL, json = PARAMS)
+    print(x.json())
+    return jsonify (
+        x.json()
     )
 
-
-
-# @app.route("/register", methods=['GET', 'POST'])
-# def register():
-#     form = RegistrationForm()
-#     if form.validate_on_submit():
-#         flash(f'Account created for {form.username.data}!', 'success')
-#         return redirect(url_for('home'))
-#     return render_template('register.html', title='Register', form=form)
-
-
-# @app.route("/login", methods=['GET', 'POST'])
-# def login():
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         if form.email.data == 'admin@blog.com' and form.password.data == 'password':
-#             flash('You have been logged in!', 'success')
-#             return redirect(url_for('home'))
-#         else:
-#             flash('Login Unsuccessful. Please check username and password', 'danger')
-#     return render_template('login.html', title='Login', form=form)

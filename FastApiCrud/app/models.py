@@ -8,3 +8,12 @@ class User(Base):
     password = Column(String(50))
 
 Base.metadata.create_all(engine)
+
+
+class Post(Base):
+    __tablename__ = 'post'
+    id = Column(Integer, primary_key=True)
+    content =  Column(String(50))
+    
+
+Base.metadata.create_all(engine)
